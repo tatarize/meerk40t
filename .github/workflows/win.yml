@@ -22,13 +22,9 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install numpy
+        pip install .[all]
         pip install wheel
-        pip install wxPython
-        pip install ezdxf
-        pip install pyserial
         pip install potracer
-        pip install meerk40t-camera opencv-python-headless
         pip install meerk40t-barcodes
 # ==4.1.1
 # Compile bootloaders in order to reduce virus totals
