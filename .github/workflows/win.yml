@@ -80,7 +80,32 @@ jobs:
         ##move external_plugins.py external_plugins_build.py
         ##move external_plugins.unused external_plugins.py
         ##cd ..
+    
+    - name: Write key file
+      env:
+        AUTH: ${{ secrets.CERTIFICATE }}
+      run: |
+        echo "$AUTH" | base64 --decode > ${HOME}/key.json
+    
+    - name: Sign executable
+      run: |
+        $env:SIGNTOOL_PATH = "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\signtool.exe"
+        $env:CERTIFICATE_PATH = ${HOME}/key.json
+        $env:CERTIFICATE_PASSWORD = ${{ secrets.CERT_PASSWORD }}
+        $env:EXECUTABLE_PATH = "meerk40t.exe"
+        $env:TIMESTAMP_SERVER = "http://timestamp.digicert.com"
 
+        $signtool_args = @{
+          FilePath = $env:EXECUTABLE_PATH
+          CertificatePath = $env:CERTIFICATE_PATH
+          CertificatePassword = $env:CERTIFICATE_PASSWORD
+          TimestampServer = $env:TIMESTAMP_SERVER
+        }
+        & $env:SIGNTOOL_PATH sign $signtool_args
+
+    - name: Cleanup Key
+      run: rm ${HOME/key.json}
+    
     - name: Upload Release Assets
       id: release
       uses: softprops/action-gh-release@v1
