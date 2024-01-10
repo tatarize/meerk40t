@@ -81,20 +81,19 @@ jobs:
         ##move external_plugins.unused external_plugins.py
         ##cd ..
     
-    - name: Write key file
-      env:
-        AUTH: ${{ secrets.CERTIFICATE }}
-      run: |
-        echo "$AUTH" | base64 --decode > ${HOME}/key.json
-    
     - name: Sign executable
+      env:
+        WINDOWS_CERTIFICATE: ${{ secrets.CERTIFICATE }}
+        WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.CERT_PASSWORD }}
+        SIGNTOOL_PATH: "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.19041.0\\x64\\signtool.exe"
+        CERTIFICATE_PATH: "certificate/certificate.pfx"
+        EXECUTABLE_PATH: "meerk40t.exe"
+        TIMESTAMP_SERVER: "http://timestamp.digicert.com"
       run: |
-        $env:SIGNTOOL_PATH = "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\signtool.exe"
-        $env:CERTIFICATE_PATH = ${HOME}/key.json
-        $env:CERTIFICATE_PASSWORD = ${{ secrets.CERT_PASSWORD }}
-        $env:EXECUTABLE_PATH = "meerk40t.exe"
-        $env:TIMESTAMP_SERVER = "http://timestamp.digicert.com"
-
+        New-Item -ItemType directory -Path certificate
+        Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_CERTIFICATE
+        certutil -decode certificate/tempCert.txt $env:CERTIFICATE_PATH
+        
         $signtool_args = @{
           FilePath = $env:EXECUTABLE_PATH
           CertificatePath = $env:CERTIFICATE_PATH
@@ -102,9 +101,7 @@ jobs:
           TimestampServer = $env:TIMESTAMP_SERVER
         }
         & $env:SIGNTOOL_PATH sign $signtool_args
-
-    - name: Cleanup Key
-      run: rm ${HOME/key.json}
+        Remove-Item -path certificate -include tempCert.txt
     
     - name: Upload Release Assets
       id: release
