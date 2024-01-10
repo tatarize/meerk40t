@@ -86,18 +86,20 @@ jobs:
         WINDOWS_CERTIFICATE: ${{ secrets.CERTIFICATE }}
         WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.CERT_PASSWORD }}
         SIGNTOOL_PATH: "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.19041.0\\x64\\signtool.exe"
-        CERTIFICATE_PATH: "certificate/certificate.pfx"
+        CERTIFICATE_PATH: certificate/certificate.pfx
         EXECUTABLE_PATH: "meerk40t.exe"
         TIMESTAMP_SERVER: "http://timestamp.digicert.com"
       run: |
         New-Item -ItemType directory -Path certificate
         Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_CERTIFICATE
         certutil -decode certificate/tempCert.txt $env:CERTIFICATE_PATH
+        dir
+        dir certificate
         
         $signtool_args = @{
           FilePath = $env:EXECUTABLE_PATH
           CertificatePath = $env:CERTIFICATE_PATH
-          CertificatePassword = $env:CERTIFICATE_PASSWORD
+          CertificatePassword = $env:WINDOWS_CERTIFICATE_PASSWORD
           TimestampServer = $env:TIMESTAMP_SERVER
         }
         & $env:SIGNTOOL_PATH sign $signtool_args
