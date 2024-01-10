@@ -95,8 +95,7 @@ jobs:
         certutil -decode certificate/tempCert.txt $env:CERTIFICATE_PATH
         dir
         dir certificate
-        $env:SIGNTOOL_PATH sign /debug /f $env:CERTIFICATE_PATH /p $env:WINDOWS_CERTIFICATE_PASSWORD $env:EXECUTABLE_PATH
-        
+
         $signtool_args = @{
           FilePath = $env:EXECUTABLE_PATH
           CertificatePath = $env:CERTIFICATE_PATH
